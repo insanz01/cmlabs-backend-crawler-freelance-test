@@ -1,0 +1,17 @@
+{
+  "name": "web-crawler",
+  "version": "1.0.0",
+  "description": "Web crawler for SPA, SSR, and PWA websites using Playwright",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node --watch src/app.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^4.21.0",
+    "express-rate-limit": "^8.3.2",
+    "helmet": "^8.1.0",
+    "playwright": "^1.49.0"
+  }
+}

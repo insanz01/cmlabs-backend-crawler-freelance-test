@@ -1,0 +1,10 @@
+node_modules/
+.env
+.env.local
+.env.*.local
+*.log
+*.pem
+*.key
+*.cert
+.DS_Store
+.claude/
