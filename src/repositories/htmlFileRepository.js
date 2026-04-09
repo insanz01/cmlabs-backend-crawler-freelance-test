@@ -63,10 +63,16 @@ class HtmlFileRepository extends BaseRepository {
 
     const files = fs.readdirSync(OUTPUT_DIR).filter((f) => f.endsWith('.meta.json'));
 
-    return files.map((f) => {
-      const raw = fs.readFileSync(path.join(OUTPUT_DIR, f), 'utf-8');
-      return JSON.parse(raw);
-    });
+    const results = [];
+    for (const f of files) {
+      try {
+        const raw = fs.readFileSync(path.join(OUTPUT_DIR, f), 'utf-8');
+        results.push(JSON.parse(raw));
+      } catch {
+        // Skip corrupt meta files
+      }
+    }
+    return results;
   }
 
   async findByName(name) {

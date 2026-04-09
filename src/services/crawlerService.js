@@ -25,7 +25,7 @@ class CrawlerService {
   }
 
   _releaseSlot() {
-    this._active--;
+    if (this._active > 0) this._active--;
     if (this._queue.length > 0) {
       this._active++;
       const next = this._queue.shift();

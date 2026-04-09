@@ -22,25 +22,45 @@ function _extFromUrl(url, contentType) {
     if (map[contentType]) return map[contentType];
   }
 
-  const parsed = new URL(url);
-  const basename = path.basename(parsed.pathname);
-  const ext = path.extname(basename).split('?')[0].toLowerCase();
-  const allowed = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.avif', '.ico'];
-  return allowed.includes(ext) ? ext : '.jpg';
+  try {
+    const parsed = new URL(url);
+    const basename = path.basename(parsed.pathname);
+    const ext = path.extname(basename).split('?')[0].toLowerCase();
+    const allowed = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.avif', '.ico'];
+    return allowed.includes(ext) ? ext : '.jpg';
+  } catch {
+    return '.jpg';
+  }
 }
 
 function _hashUrl(url) {
   return crypto.createHash('sha256').update(url).digest('hex').slice(0, 16);
 }
 
-function _download(urlStr) {
+const MAX_REDIRECTS = 5;
+
+function _download(urlStr, redirectCount = 0) {
   return new Promise((resolve, reject) => {
+    if (redirectCount > MAX_REDIRECTS) {
+      return reject(new Error('Too many redirects'));
+    }
+
     const client = urlStr.startsWith('https') ? https : http;
 
     const req = client.get(urlStr, { timeout: 10000 }, (res) => {
       // Ikuti redirect
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        return _download(res.headers.location).then(resolve, reject);
+        let location = res.headers.location;
+        // Resolve relative redirect URLs
+        try {
+          if (!location.startsWith('http')) {
+            location = new URL(location, urlStr).href;
+          }
+        } catch {
+          res.resume();
+          return reject(new Error('Invalid redirect URL'));
+        }
+        return _download(location, redirectCount + 1).then(resolve, reject);
       }
 
       if (res.statusCode !== 200) {

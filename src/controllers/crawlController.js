@@ -148,15 +148,24 @@ class CrawlController {
         });
       }
 
-      const meta = await crawlerService.crawlCustom(name, url);
+      await crawlerService.crawlCustom(name, url);
 
       const result = await htmlFileRepo.findByName(name);
+
+      if (!result || !result.html) {
+        return res.status(500).json({
+          success: false,
+          message: 'Crawl succeeded but result could not be retrieved.',
+        });
+      }
 
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       res.setHeader('Content-Disposition', `attachment; filename="${name}.html"`);
       res.send(result.html);
     } catch (err) {
-      res.status(500).json({ success: false, message: safeError(err) });
+      if (!res.headersSent) {
+        res.status(500).json({ success: false, message: safeError(err) });
+      }
     }
   }
 }
